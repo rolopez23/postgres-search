@@ -1,0 +1,75 @@
+COPY people(id, name, description)
+FROM '/Users/robertlopez/lessons/textsearch/test.csv'
+DELIMITER ','
+CSV HEADER;
+
+UPDATE people SET text_vector = x.vector FROM (
+SELECT id, 
+  to_tsvector('english', description)
+  AS vector FROM people
+ ) AS x WHERE x.id = people.id;
+
+
+UPDATE people SET text_vector = x.vector FROM (
+text(# SELECT id, 
+text(#   to_tsvector('english', description)
+text(#   AS vector FROM people
+text(#  ) AS x WHERE x.id = people.id;
+
+
+ Gather  (cost=1000.00..3011948.53 rows=127117 width=69) (actual time=514.298..30277.102 rows=184434 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Parallel Seq Scan on people  (cost=0.00..2998236.83 rows=52965 width=69) (actual time=477.511..30136.167 rows=61478 loops=3)
+         Filter: (text_vector @@ to_tsquery('invoice'::text))
+         Rows Removed by Filter: 3271855
+ Planning Time: 0.234 ms
+ Execution Time: 30307.806 ms
+(8 rows)
+
+check, mark, hryvnia
+
+explain analyze select * from people where text_vector @@ to_tsquery('estonia');
+                                                              QUERY PLAN                                                               
+---------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1471.75..130241.92 rows=50000 width=69) (actual time=2.872..61.723 rows=3018 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Parallel Bitmap Heap Scan on people  (cost=471.75..124241.92 rows=20833 width=69) (actual time=0.988..26.611 rows=1006 loops=3)
+         Recheck Cond: (text_vector @@ to_tsquery('estonia'::text))
+         Heap Blocks: exact=2025
+         ->  Bitmap Index Scan on tsx_idx  (cost=0.00..459.25 rows=50000 width=0) (actual time=1.844..1.844 rows=3018 loops=1)
+               Index Cond: (text_vector @@ to_tsquery('estonia'::text))
+ Planning Time: 0.146 ms
+ Execution Time: 62.514 ms
+
+ explain analyze select * from people where text_vector @@ to_tsquery('hryvnia');
+                                                              QUERY PLAN                                                               
+---------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1471.75..130241.92 rows=50000 width=69) (actual time=4.669..108.879 rows=4241 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Parallel Bitmap Heap Scan on people  (cost=471.75..124241.92 rows=20833 width=69) (actual time=1.515..69.118 rows=1414 loops=3)
+         Recheck Cond: (text_vector @@ to_tsquery('hryvnia'::text))
+         Heap Blocks: exact=2378
+         ->  Bitmap Index Scan on tsx_idx  (cost=0.00..459.25 rows=50000 width=0) (actual time=3.042..3.043 rows=4241 loops=1)
+               Index Cond: (text_vector @@ to_tsquery('hryvnia'::text))
+ Planning Time: 0.189 ms
+ Execution Time: 109.887 ms
+(10 rows)
+
+explain analyze select * from people where text_vector @@ to_tsquery('mark');
+                                                              QUERY PLAN                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1471.75..130241.92 rows=50000 width=69) (actual time=2.420..58.350 rows=2174 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Parallel Bitmap Heap Scan on people  (cost=471.75..124241.92 rows=20833 width=69) (actual time=0.715..18.693 rows=725 loops=3)
+         Recheck Cond: (text_vector @@ to_tsquery('mark'::text))
+         Heap Blocks: exact=2106
+         ->  Bitmap Index Scan on tsx_idx  (cost=0.00..459.25 rows=50000 width=0) (actual time=1.346..1.346 rows=2174 loops=1)
+               Index Cond: (text_vector @@ to_tsquery('mark'::text))
+ Planning Time: 0.132 ms
+ Execution Time: 58.716 ms
+(10 rows)
+
