@@ -9,11 +9,12 @@ app.use(express.static('public'))
 
 app.get('/search/:term', (req, res)=> {
   const term = req.params.term;
-  search(term, (err,data)=>{
+  // console.log(term)
+  search(`${term}`, (err,data)=>{
     if(err) {
       res.send(err)
     } else {
-      res.send(null, data)
+      res.send(data)
     }
   })
 })

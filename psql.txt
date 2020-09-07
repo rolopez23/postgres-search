@@ -3,6 +3,14 @@ FROM '/Users/robertlopez/lessons/textsearch/test.csv'
 DELIMITER ','
 CSV HEADER;
 
+
+COPY people(id, name, description)
+FROM '~/data/test.csv'
+DELIMITER ','
+CSV HEADER;
+
+psql -c "\copy people from './test.csv' DELIMETER ',' CSV_HEADER;
+
 UPDATE people SET text_vector = x.vector FROM (
 SELECT id, 
   to_tsvector('english', description)
