@@ -1,2 +1,4 @@
 test.csv
 node_modules
+*.out
+*.log
